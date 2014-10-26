@@ -1,9 +1,24 @@
 ---
-title: "Weight Lifting Exercise Dataset"
-output:
-  html_document:
-    keep_md: yes
+title       : Motivation and pre-requisites
+subtitle    : 
+author      : Jeffrey Leek
+job         : Johns Hopkins Bloomberg School of Public Health
+logo        : bloomberg_shield.png
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow   # 
+url:
+  lib: ../../librariesNew
+  assets: ../../assets
+widgets     : [mathjax]            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
 ---
+#---
+#title: "Weight Lifting Exercise Dataset"
+#output:
+#  html_document:
+#    keep_md: yes
+#---
 
 
 ##Summary 

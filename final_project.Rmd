@@ -1,5 +1,5 @@
 ---
-title       : Motivation and pre-requisites
+title       : "Weight Lifting Exercise Dataset"
 subtitle    : 
 author      : Jeffrey Leek
 job         : Johns Hopkins Bloomberg School of Public Health

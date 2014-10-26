@@ -1,0 +1,106 @@
+##Summary 
+The goal of the machine learning predictoin conducted here is to predict the type of trainging participants used in experiment described in following website. The link of the website: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). 
+
+What I have tried is to find models can get better accuracy on prediction. Two types of approaches are used: one is to increase size of training sample; the other one is to change training algorithms. Two types of machine learning algorithms are used: decision tree via rpart function as well as randomforest algorithm.
+In the begining, I tried model prediction retrieved from rpart function with small size of training data. The accuracy is only 0.666. Then I change the size of training data to see if sample size affect prediction result a lot or not. For the second model prediction retrieved from rpart function with 10 times lager size of training data, the accuracy I got is still low, 0.738. Then I moved to use randomForest function since the size of training data is not the key to determine accurate model. When I used randomForest function for model prediciton, I used small size of training data for prediction, and used larger size of training data for prediction later. the accuracy I got from predictions via randomForest function are 0.9104 and 0.9906, which demonstrates randomForest is a better function for model prediciton, and I picked up the best one for prediction of test data.
+
+
+
+##Data 
+The training data for this project are available here: 
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here: 
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+
+##Load data
+First off, load library needed and read datasets from local repo.
+
+```{r, echo=TRUE}
+library(caret)
+library(rpart)
+library(randomForest)
+library(rpart.plot)            	# Enhanced tree plots
+
+train=read.csv("pml-training.csv", header=TRUE)
+test=read.csv("pml-testing.csv", header=TRUE)
+```
+
+##Clean data
+Found a lot of NAs and missing values in train data. a process of data cleaning in COLUMN is necessary in the begining. Later, split train dataset into training  and testing datasets for final model testing
+```{r, echo=TRUE}
+badTrainind1<-sapply(train, function(x) any(is.na(x)))
+badTrainind2<-sapply(train, function(x) "" %in% levels(x))
+badTrainindtot <-badTrainind1 | badTrainind2
+cleanTrain <- train[,-which(badTrainindtot)]
+
+# first 7 column of cleanTrain are not important for training model. remove them
+cleanTrain <- cleanTrain[,-1:-7]
+
+# split train data into training data and testing data with the ratio of 70/30
+set.seed(125)
+inTrain <-createDataPartition(cleanTrain$classe, p = 0.7, list=FALSE)
+training <- cleanTrain[inTrain,]
+testing <- cleanTrain[-inTrain,]
+```
+
+# Model selection
+Test whether to rpart function with small training data can give me noce prediction or not.
+```{r, echo=TRUE}
+set.seed(125)
+inTrainsmall <-createDataPartition(cleanTrain$classe, p = 0.04, list=FALSE)
+trainingsmall <- cleanTrain[inTrainsmall,]
+testingsmall <- cleanTrain[-inTrainsmall,]
+
+# quick survey via decision tree (n=787) and check accracy of this model
+rpartmodelfitsmall <- rpart(classe~., data=trainingsmall, method="class")
+predictiontrainingsmall <- predict(rpartmodelfitsmall, newdata=testingsmall, type="class")
+confusionMatrix(predictiontrainingsmall, testingsmall$classe)
+```
+
+Accuracy is only 0.666. I choose larger dataset to see if the size of training dataset affect accuracy a lot ot not
+
+```{r, echo=TRUE}
+set.seed(125)
+# resample training dataset which has number of observation equals to 7870, and use rpart to create model
+inTrainsmall1 <-createDataPartition(cleanTrain$classe, p = 0.4, list=FALSE)
+trainingsmall1 <- cleanTrain[inTrainsmall1,]
+testingsmall1 <- cleanTrain[-inTrainsmall1,]
+# quick survey via decision tree (n=7870) and check accracy of this model
+rpartmodelfitsmall1 <- rpart(classe~., data=trainingsmall1, method="class")
+predictiontrainingsmall1 <- predict(rpartmodelfitsmall1, newdata=testingsmall1, type="class")
+confusionMatrix(predictiontrainingsmall1, testingsmall1$classe)
+```
+
+Even almot half of train data are used for model prediction via rpart function, the best accuracy I got is 0.738. Then I know rpart would not be a good function to build prediciotn model. I use randomForest function instead.
+
+```{r, echo=TRUE}
+# use rf model and small set of training data, trainingsmall, to predict model
+rf787modelfit <- randomForest(classe~., data=trainingsmall, importance = FALSE)
+predictionrf787modelfit <- predict(rf787modelfit, newdata=testingsmall, type="class")
+confusionMatrix(predictionrf787modelfit, testingsmall$classe)
+```
+
+The accuracy is 0.907, which is greatly improved. Change the size of training dataset to see if the effect of size on accuracy.
+
+```{r, echo=TRUE}
+rf7870modelfit <- randomForest(classe~., data=trainingsmall1, importance = FALSE)
+predictionrf7870modelfit <- predict(rf7870modelfit, newdata=testingsmall1, type="class")
+confusionMatrix(predictionrf7870modelfit, testingsmall1$classe)
+```
+The accuracy is 0.986. The out of sample error rate is 0.014. Check the accuracy of this model on testing before I pick this model as final model for model prediction on test dataset. 
+
+```{r, echo=TRUE}
+predictionrftesting <- predict(rf7870modelfit, newdata=testing, type="class")
+confusionMatrix(predictionrftesting, testing$classe)
+```
+The accuracy on testing dataset is 0.991, which is good for model prediciton. Then I believe this model can be a good model for test dataset of 20 observations. Go ahead and predict!
+
+```{r, echo=TRUE}
+# apply model to real test dataset, the on with 20 observations
+predictionrftest<- predict(rf7870modelfit, newdata=test, type="class")
+predictionrftest
+```

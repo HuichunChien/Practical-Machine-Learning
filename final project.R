@@ -55,7 +55,7 @@ confusionMatrix(predictiontrainingsmall1, testingsmall1$classe)
 rf787modelfit <- randomForest(classe~., data=trainingsmall, importance = FALSE)
 predictionrf787modelfit <- predict(rf787modelfit, newdata=testingsmall, type="class")
 confusionMatrix(predictionrf787modelfit, testingsmall$classe)
-# The accuracy is 0.9104, which is greaterly improved. Change the size of training dataset to see if the effect of size on accuracy
+# The accuracy is 0.9104, which is greatly improved. Change the size of training dataset to see if the effect of size on accuracy
 
 
 rf7870modelfit <- randomForest(classe~., data=trainingsmall1, importance = FALSE)

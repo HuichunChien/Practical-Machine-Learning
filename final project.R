@@ -34,10 +34,9 @@ testingsmall <- cleanTrain[-inTrainsmall,]
 
 # quick survey via decision tree (n=787) and check accracy of this model
 rpartmodelfitsmall <- rpart(classe~., data=trainingsmall, method="class")
-prp(rpartmodelfitsmall)
-predictiontrainingsmall <- predict(rpartmodelfitsmall, newdata=trainingsmall, type="class")
-confusionMatrix(predictiontrainingsmall, trainingsmall$classe)
-# Accuracy is only 0.7522. I choose larger dataset to see if the size of training dataset affect accuracy a lot ot not
+predictiontrainingsmall <- predict(rpartmodelfitsmall, newdata=testingsmall, type="class")
+confusionMatrix(predictiontrainingsmall, testingsmall$classe)
+# Accuracy is only 0.666. I choose larger dataset to see if the size of training dataset affect accuracy a lot ot not
 # Need use another model with higher accuracy rate. I increase the size of dataset 10 time larger.
 
 # resample training dataset which has number of observation equals to 7870, and use rpart to create model
@@ -47,9 +46,9 @@ testingsmall1 <- cleanTrain[-inTrainsmall1,]
 
 # quick survey via decision tree (n=7870) and check accracy of this model
 rpartmodelfitsmall1 <- rpart(classe~., data=trainingsmall1, method="class")
-predictiontrainingsmall1 <- predict(rpartmodelfitsmall1, newdata=trainingsmall1, type="class")
-confusionMatrix(predictiontrainingsmall1, trainingsmall1$classe)
-# the accuracy is 0.74, which means the accuracy got from rpart model is low. Need to switch to another model. I choose to use randomForest 
+predictiontrainingsmall1 <- predict(rpartmodelfitsmall1, newdata=testingsmall1, type="class")
+confusionMatrix(predictiontrainingsmall1, testingsmall1$classe)
+# the accuracy is 0.738, which means the accuracy got from rpart model is low. Need to switch to another model. I choose to use randomForest 
 
 
 # use rf model and small set of training data, trainingsmall, to predict model
@@ -75,3 +74,5 @@ predictionrftest<- predict(rf7870modelfit, newdata=test, type="class")
 #  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
 #  B  A  B  A  A  E  D  B  A  A  B  C  B  A  E  E  A  B  B  B 
 #Levels: A B C D E
+
+

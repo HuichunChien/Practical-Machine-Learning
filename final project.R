@@ -30,7 +30,7 @@ testing <- cleanTrain[-inTrain,]
 set.seed(125)
 inTrainsmall <-createDataPartition(cleanTrain$classe, p = 0.04, list=FALSE)
 trainingsmall <- cleanTrain[inTrainsmall,]
-testingsmall <- cleanTrain[-inTrainsmall1,]
+testingsmall <- cleanTrain[-inTrainsmall,]
 
 # quick survey via decision tree (n=787) and check accracy of this model
 rpartmodelfitsmall <- rpart(classe~., data=trainingsmall, method="class")

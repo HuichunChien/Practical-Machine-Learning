@@ -1,0 +1,128 @@
+# PML Quiz4 
+# Q1
+library(ElemStatLearn)
+library(caret)
+library(gbm)
+data(vowel.train)
+data(vowel.test) 
+
+set.seed(33833)
+
+train <- vowel.train
+test <- vowel.test
+
+rfmodfit <- train(factor(y)~., data= train, method="rf", family="class" )
+gbmmodfit <- train(factor(y)~., data= train, method="gbm" )
+
+rfprediction <- predict(rfmodfit, newdata=test)
+gbmprediction <- predict(gbmmodfit, newdata=test)
+
+agree_test <-test[rfprediction==gbmprediction,]
+mod_agree <- predict(rfmodfit, newdata=agree_test) # no matter you use rf or gbm, the results are verified to be identical since they both "agree" with each other.
+sum(mod_agree==agree_test$y)/length(mod_agree)
+
+confusionMatrix(rfprediction, test$y)
+# Accuracy : 0.5931  ,  95% CI : (0.5467, 0.6382)
+
+confusionMatrix(gbmprediction, test$y)
+#  Accuracy : 0.4848  , 95% CI : (0.4384, 0.5315)
+
+confusionMatrix(gbmprediction, rfprediction)
+# Accuracy : 0.6775 , 95% CI : (0.6327, 0.7199)
+
+# Q2
+library(caret)
+library(gbm)
+set.seed(3433)
+library(AppliedPredictiveModeling)
+data(AlzheimerDisease)
+adData = data.frame(diagnosis,predictors)
+inTrain = createDataPartition(adData$diagnosis, p = 3/4)[[1]]
+training = adData[ inTrain,]
+testing = adData[-inTrain,]
+
+set.seed(62433)
+rfmodfit <- train(factor(diagnosis)~., data=training, method="rf")
+gbmmodfit <- train(factor(diagnosis)~., data=training, method="gbm")
+ldamodfit <- train(factor(diagnosis)~., data=training, method="lda")
+rfprediction <- predict(rfmodfit, newdata=testing)
+gbmprediction <- predict(gbmmodfit, newdata=testing)
+ldaprediction <- predict(ldamodfit, newdata=testing)
+
+confusionMatrix(rfprediction, testing$diagnosis)
+# Accuracy : 0.7805         95% CI : (0.6754, 0.8644)
+confusionMatrix(gbmprediction, testing$diagnosis)
+# Accuracy : 0.7927         95% CI : (0.6889, 0.8743)
+confusionMatrix(ldaprediction, testing$diagnosis)
+# Accuracy : 0.7683         95% CI : (0.662, 0.8544)
+
+# create combined dataset
+rfpredtraining <- predict(rfmodfit, newdata=training)
+gbmpredtraining <- predict(gbmmodfit, newdata=training)
+ldapredtraining <- predict(ldamodfit, newdata=training)
+Combtraining <-data.frame(rf=rfpredtraining, gbm=gbmpredtraining, lda=ldapredtraining, diagnosis=training$diagnosis)
+rfpredtesting <- predict(rfmodfit, newdata=testing)
+gbmpredtesting <- predict(gbmmodfit, newdata=testing)
+ldapredtesting <- predict(ldamodfit, newdata=testing)
+Combtesting <-data.frame(rf=rfpredtesting, gbm=gbmpredtesting, lda=ldapredtesting, diagnosis=testing$diagnosis)
+
+combrfmodfit <- train(factor(diagnosis)~., data=Combtraining, method="rf")
+combrfprediction <- predict(combrfmodfit, newdata=Combtesting)
+confusionMatrix(combrfprediction, Combtesting$diagnosis)
+# Accuracy : 0.7927          95% CI : (0.6889, 0.8743)
+### need put rf=...,gbm=..., lda=....in data.frame. otherwise, R software would confuse on identifying predictors
+### For question 2 the trick is to name the three predictor variables in both the testing and training data.frame, otherwise they get mismatched. for example data.frame(p1=resRF, p2=resGBM, p3=resLDA, diagnosis=training$diagnosis). If you do that you will get the correct answer. 
+
+# Q4
+set.seed(3523)
+library(AppliedPredictiveModeling)
+data(concrete)
+inTrain = createDataPartition(concrete$CompressiveStrength, p = 3/4)[[1]]
+training = concrete[ inTrain,]
+testing = concrete[-inTrain,]
+
+set.seed(233)
+modfit <- train(CompressiveStrength~., data=training, method="lasso")
+plot(modfit$finalModel)
+# plot.enet is function for elasticinet class
+
+# Q5 
+install.packages("lubridate")
+library(lubridate)  # For year() function below
+dat = read.csv("~/Desktop/gaData.csv")
+training = dat[year(dat$date) < 2012,]
+testing = dat[(year(dat$date)) > 2011,]
+tstrain = ts(training$visitsTumblr)
+tstest = ts(testing$visitsTumblr)
+
+install.packages("forecast")
+library(forecast)
+fit <- bats(tstrain)
+prediction <-forecast(fit, h=length(tstest), level=c(95))
+
+# lower and upper bounds of 95 confidence interval
+Lo95 <-prediction$lower
+Hi95 <-prediction$upper
+
+accuracy(prediction, testing$visitsTumblr)
+sum(testing$visitsTumblr <= Hi95)/length(tstest)
+
+# accuracy=0.9617021
+
+# Q5
+set.seed(3523)
+library(AppliedPredictiveModeling)
+data(concrete)
+inTrain = createDataPartition(concrete$CompressiveStrength, p = 3/4)[[1]]
+training = concrete[ inTrain,]
+testing = concrete[-inTrain,]
+
+# packages for support vector machine
+install.packages("e1071")
+library(e1071)
+set.seed(325)
+modfit <-svm(CompressiveStrength~. ,data=training)
+prediction <- predict(modfit, newdata=testing)
+
+sqrt(sum((prediction-testing$CompressiveStrength)^2)/(length(prediction)))
+# 6.715009
